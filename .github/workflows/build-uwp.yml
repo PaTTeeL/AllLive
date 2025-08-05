@@ -12,16 +12,11 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       
     - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.1
+      uses: microsoft/setup-msbuild@v2
       
-    - name: Setup Windows SDK
-      uses: GuillaumeFalourd/setup-windows-sdk-action@v1
-      with:
-        sdk-version: 18362
-
     - name: Restore NuGet packages
       run: |
         nuget restore AllLive.sln
@@ -42,14 +37,16 @@ jobs:
         }
 
     - name: Upload MSIX Package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
+        # artifact的名称，在下载时会用到
         name: AllLive-MSIX
+        # 要上传的文件或目录的路径。支持通配符。
         path: .\AllLive.UWP\AppPackages\*_x64.msixbundle
 
     - name: Create Release
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: .\AllLive.UWP\AppPackages\*_x64.msixbundle
         tag_name: v${{ github.run_number }}
