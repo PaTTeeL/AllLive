@@ -1,0 +1,64 @@
+name: Build UWP Application
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  BUILD_CONFIG: ${{ (github.event_name == 'pull_request') && 'Debug' || 'Release' }}
+  TARGET_BRANCH: ${{ (github.event_name == 'workflow_dispatch') && 'master' || github.ref }}
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: microsoft/setup-msbuild@v2
+
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ env.TARGET_BRANCH }}
+
+    - uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-${{ hashFiles('**/packages.lock.json', '**/*.csproj', '**/*.sln') }}
+        restore-keys: ${{ runner.os }}
+
+    - name: Restore and Build
+      run: |
+        msbuild AllLive.sln `
+        /target:Restore,Build `
+        /property:AppxBundle=Always `
+        /property:AppxBundlePlatforms=x64 `
+        /property:Configuration=${{ env.BUILD_CONFIG }} `
+        /property:UapAppxPackageBuildMode=StoreUpload
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+      with:
+        name: AllLive-MSIX-Bundle
+        path: '**/AppPackages/**/*.msixbundle'
+
+    - name: Generate Commit SHA
+      if: github.event_name == 'workflow_dispatch'
+      id: sha
+      run: |
+        echo "full_sha=$(git rev-parse HEAD)" >> $env:GITHUB_OUTPUT
+        echo "short_sha=$(git rev-parse --short HEAD)" >> $env:GITHUB_OUTPUT
+
+    - name: Create Release Manually
+      if: github.event_name == 'workflow_dispatch'
+      uses: softprops/action-gh-release@v2
+      with:
+        prerelease: true
+        files: '**/AppPackages/**/*.msixbundle'
+        tag_name: ${{ steps.sha.outputs.short_sha }}
+        target_commitish: ${{ steps.sha.outputs.full_sha }}
+        # name: 'Preview Build : ${{ steps.sha.outputs.short_sha }}'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
