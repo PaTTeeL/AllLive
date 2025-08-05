@@ -23,23 +23,7 @@ jobs:
 
     - name: Build Solution
       run: |
-        msbuild AllLive.sln /p:Platform=x64 /p:AppxBundlePlatforms="x64" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:Configuration=Release /p:AppxPackageDir=".\AllLive.UWP\AppPackages\"
-
-    - name: Find MSIX Package
-      run: |
-        dir .\ -Recurse -Include *.msixbundle
-      shell: powershell
-
-    - name: Create MSIX Package
-      run: |
-        # 假设您的 MSIX 包位于此路径，请根据实际路径调整
-        $msixPath = ".\AllLive.UWP\AppPackages\*_x64.msixbundle"
-        if (Test-Path $msixPath) {
-          echo "MSIX package created successfully"
-        } else {
-          echo "Failed to create MSIX package"
-          exit 1
-        }
+        msbuild AllLive.sln /p:Platform=x64 /p:AppxBundlePlatforms="x64" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:Configuration=Release
 
     - name: Upload MSIX Package
       uses: actions/upload-artifact@v4
@@ -47,7 +31,7 @@ jobs:
         # artifact的名称，在下载时会用到
         name: AllLive-MSIX
         # 要上传的文件或目录的路径。支持通配符。
-        path: .\AllLive.UWP\AppPackages\*_x64.msixbundle
+        path: .\AllLive.UWP\AppPackages\**\*_x64.msixbundle
 
     - name: Create Release
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
