@@ -1,0 +1,60 @@
+name: Build UWP App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.1
+      
+    - name: Setup Windows SDK
+      uses: GuillaumeFalourd/setup-windows-sdk-action@v1
+      with:
+        sdk-version: 18362
+
+    - name: Restore NuGet packages
+      run: |
+        nuget restore AllLive.sln
+
+    - name: Build Solution
+      run: |
+        msbuild AllLive.sln /p:Platform=x64 /p:AppxBundlePlatforms="x64" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:Configuration=Release
+
+    - name: Create MSIX Package
+      run: |
+        # 假设您的 MSIX 包位于此路径，请根据实际路径调整
+        $msixPath = ".\AllLive.UWP\AppPackages\*_x64.msixbundle"
+        if (Test-Path $msixPath) {
+          echo "MSIX package created successfully"
+        } else {
+          echo "Failed to create MSIX package"
+          exit 1
+        }
+
+    - name: Upload MSIX Package
+      uses: actions/upload-artifact@v2
+      with:
+        name: AllLive-MSIX
+        path: .\AllLive.UWP\AppPackages\*_x64.msixbundle
+
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: .\AllLive.UWP\AppPackages\*_x64.msixbundle
+        tag_name: v${{ github.run_number }}
+        name: Release v${{ github.run_number }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
