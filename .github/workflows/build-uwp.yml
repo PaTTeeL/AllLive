@@ -23,7 +23,12 @@ jobs:
 
     - name: Build Solution
       run: |
-        msbuild AllLive.sln /p:Platform=x64 /p:AppxBundlePlatforms="x64" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:Configuration=Release
+        msbuild AllLive.sln /p:Platform=x64 /p:AppxBundlePlatforms="x64" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=StoreUpload /p:Configuration=Release /p:AppxPackageDir=".\AllLive.UWP\AppPackages\"
+
+    - name: Find MSIX Package
+      run: |
+        dir .\ -Recurse -Include *.msixbundle
+      shell: powershell
 
     - name: Create MSIX Package
       run: |
