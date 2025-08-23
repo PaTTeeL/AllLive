@@ -30,12 +30,39 @@ jobs:
 
     - name: Restore and Build
       run: |
-        msbuild AllLive.sln `
-        /target:Restore,Build `
-        /property:AppxBundle=Always `
-        /property:AppxBundlePlatforms=x64 `
-        /property:Configuration=${{ env.BUILD_CONFIG }} `
-        /property:UapAppxPackageBuildMode=StoreUpload
+        $certificatePath = Join-Path -Path $env:RUNNER_TEMP -ChildPath "CustomCertificate.pfx"
+        try {
+          Write-Host "Writing temporary certificate file..."
+          $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.KEYSTORE_BASE64 }}")
+          [IO.File]::WriteAllBytes($certificatePath, $pfx_cert_byte)
+
+          Write-Host "Reading certificate information..."
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(
+              $certificatePath,"${{ secrets.KEY_PASSWORD }}",
+              [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
+          )
+          Write-Host "Subject: $($cert.Subject)"
+          Write-Host "Thumbprint: $($cert.Thumbprint)"
+
+          Write-Host "Starting MSBuild..."
+          msbuild AllLive.sln `
+          /target:Restore,Build `
+          /property:AppxBundle=Always `
+          /property:AppxBundlePlatforms=x64 `
+          /property:Configuration=${{ env.BUILD_CONFIG }} `
+          /property:GenerateTemporaryStoreCertificate=true `
+          /property:PackageCertificateKeyFile="$certificatePath" `
+          /property:PackageCertificatePassword="${{ secrets.KEY_PASSWORD }}" `
+          /property:PackageCertificateThumbprint="$($cert.Thumbprint)" `
+          /property:PackagePublisher="CN=$($cert.Thumbprint)" `
+          /property:UapAppxPackageBuildMode=StoreUpload
+        }
+        finally {
+          if (Test-Path $certificatePath) {
+            Write-Host "Cleaning up temporary certificate file..."
+            Remove-Item -Path $certificatePath -Force
+          }
+        }
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
