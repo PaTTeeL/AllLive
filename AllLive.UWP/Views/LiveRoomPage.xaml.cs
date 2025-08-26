@@ -654,7 +654,12 @@ namespace AllLive.UWP.Views
         //}
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
         {
-            _isNavigatingAway = true; // 在所有清理操作之前设置标志位
+            _isNavigatingAway = true;
+
+            if (e.SourcePageType == typeof(MainPage) && MainPage.CurrentPageTag == "FavoritePage")
+            {
+                MessageCenter.UpdateFavorite();
+            }
 
             liveRoomVM.AddDanmaku -= LiveRoomVM_AddDanmaku;
             StopPlay();
