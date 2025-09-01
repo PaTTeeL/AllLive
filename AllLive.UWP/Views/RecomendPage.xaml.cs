@@ -24,7 +24,7 @@ namespace AllLive.UWP.Views
     /// <summary>
     /// 可用于自身或导航至 Frame 内部的空白页。
     /// </summary>
-    public sealed partial class RecomendPage : Page
+    public sealed partial class RecomendPage : Page, IRefreshablePage
     {
         readonly RecomendVM recomendVM;
         public RecomendPage()
@@ -32,6 +32,13 @@ namespace AllLive.UWP.Views
             recomendVM = new RecomendVM();
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
             this.InitializeComponent();
+        }
+        public void Refresh()
+        {
+            if (pivot.SelectedItem is IRefreshablePage refreshableChildVM)
+            {
+                refreshableChildVM.Refresh();
+            }
         }
 
         private void MyAdaptiveGridView_ItemClick(object sender, ItemClickEventArgs e)

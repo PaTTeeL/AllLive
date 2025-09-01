@@ -23,7 +23,7 @@ namespace AllLive.UWP.Views
     /// <summary>
     /// 可用于自身或导航至 Frame 内部的空白页。
     /// </summary>
-    public sealed partial class HistoryPage : Page
+    public sealed partial class HistoryPage : Page, IRefreshablePage
     {
         readonly HistoryVM historyVM;
         public HistoryPage()
@@ -31,6 +31,11 @@ namespace AllLive.UWP.Views
             historyVM = new HistoryVM();
             this.InitializeComponent();
         }
+        public void Refresh()
+        {
+            historyVM.Refresh();
+        }
+
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);

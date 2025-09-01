@@ -24,7 +24,7 @@ namespace AllLive.UWP.Views
     /// <summary>
     /// 可用于自身或导航至 Frame 内部的空白页。
     /// </summary>
-    public sealed partial class CategoryPage : Page
+    public sealed partial class CategoryPage : Page, IRefreshablePage
     {
         readonly CategoryVM categoryVM;
         public CategoryPage()
@@ -33,6 +33,14 @@ namespace AllLive.UWP.Views
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
             this.InitializeComponent();
         }
+        public void Refresh()
+        {
+            if (pivot.SelectedItem is IRefreshablePage refreshableChildVM)
+            {
+                refreshableChildVM.Refresh();
+            }
+        }
+
         private void pivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (pivot.SelectedItem == null) return;
@@ -42,7 +50,6 @@ namespace AllLive.UWP.Views
                 vm.LoadData();
             }
         }
-
         private void GridView_ItemClick(object sender, ItemClickEventArgs e)
         {
             var item = e.ClickedItem as LiveSubCategory;

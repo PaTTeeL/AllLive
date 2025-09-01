@@ -9,6 +9,10 @@ using System.Windows.Input;
 
 namespace AllLive.UWP.ViewModels
 {
+    public interface IRefreshablePage
+    {
+        void Refresh();
+    }
     public class BaseNotifyPropertyChanged:INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;

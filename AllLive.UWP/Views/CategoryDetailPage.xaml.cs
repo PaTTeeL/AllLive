@@ -24,7 +24,7 @@ namespace AllLive.UWP.Views
     /// <summary>
     /// 可用于自身或导航至 Frame 内部的空白页。
     /// </summary>
-    public sealed partial class CategoryDetailPage : Page
+    public sealed partial class CategoryDetailPage : Page, IRefreshablePage
     {
         readonly CategoryDetailVM categoryDetailVM;
         PageArgs pageArgs;
@@ -33,6 +33,10 @@ namespace AllLive.UWP.Views
             categoryDetailVM = new CategoryDetailVM();
             this.InitializeComponent();
             NavigationCacheMode = NavigationCacheMode.Enabled;
+        }
+        public void Refresh()
+        {
+            categoryDetailVM.Refresh();
         }
 
         private void btnBack_Click(object sender, RoutedEventArgs e)

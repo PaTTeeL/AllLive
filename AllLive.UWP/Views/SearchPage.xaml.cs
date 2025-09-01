@@ -24,7 +24,7 @@ namespace AllLive.UWP.Views
     /// <summary>
     /// 可用于自身或导航至 Frame 内部的空白页。
     /// </summary>
-    public sealed partial class SearchPage : Page
+    public sealed partial class SearchPage : Page, IRefreshablePage
     {
         readonly SearchVM searchVM;
         public SearchPage()
@@ -32,6 +32,13 @@ namespace AllLive.UWP.Views
             searchVM = new SearchVM();
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
             this.InitializeComponent();
+        }
+        public void Refresh()
+        {
+            if (pivot.SelectedItem is IRefreshablePage refreshableChildVM)
+            {
+                refreshableChildVM.Refresh();
+            }
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {

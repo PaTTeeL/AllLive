@@ -53,10 +53,21 @@ namespace AllLive.UWP
 
                 navigationView.SelectedItem = navigationView.SettingsItem;
             }
-            else if (e.Key == Windows.System.VirtualKey.GamepadY)
+            else if (e.Key == Windows.System.VirtualKey.GamepadY ||
+                    (e.Key == Windows.System.VirtualKey.F && Window.Current.CoreWindow.GetKeyState(Windows.System.VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down)))
             {
                 e.Handled = true;
                 searchBox.Focus(FocusState.Programmatic);
+            }
+            else if (e.Key == Windows.System.VirtualKey.F5 ||
+                    (e.Key == Windows.System.VirtualKey.R && Window.Current.CoreWindow.GetKeyState(Windows.System.VirtualKey.Control).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down)))
+            {
+                e.Handled = true;
+                Helper.Utils.ShowMessageToast($"[MainPage] F5/Ctrl+R pressed. Current page in INNER frame is: {frame.Content?.GetType().Name ?? "null"}");
+                if (frame.Content is IRefreshablePage refreshablePage)
+                {
+                    refreshablePage.Refresh();
+                }
             }
         }
 
@@ -97,6 +108,7 @@ namespace AllLive.UWP
             {
                 item.Tag = "SettingsPage";
             }
+            Helper.Utils.ShowMessageToast($"[MainPage] NavigationView is navigating to {item.Tag} using INNER frame.");
             frame.Navigate(Type.GetType("AllLive.UWP.Views." + item.Tag));
 
         }
@@ -110,6 +122,7 @@ namespace AllLive.UWP
             }
             if (!await ParseUrl(args.QueryText))
             {
+                Helper.Utils.ShowMessageToast($"[MainPage] SearchBox is navigating to SearchPage using Frame: {this.Frame.Content?.GetType().Name ?? "null"}");
                 this.Frame.Navigate(typeof(SearchPage), args.QueryText);
             }
         }
@@ -119,6 +132,7 @@ namespace AllLive.UWP
             var parseResult = await SiteParser.ParseUrl(url);
             if (parseResult.Item1 != LiveSite.Unknown && !string.IsNullOrEmpty(parseResult.Item2))
             {
+                Helper.Utils.ShowMessageToast($"[MainPage] ParseUrl is navigating to LiveRoomPage using Frame: {this.Frame.Content?.GetType().Name ?? "null"}");
                 this.Frame.Navigate(typeof(LiveRoomPage), new PageArgs()
                 {
                     Site = MainVM.Sites[(int)parseResult.Item1].LiveSite,

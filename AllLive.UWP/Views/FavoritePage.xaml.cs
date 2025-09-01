@@ -23,7 +23,7 @@ namespace AllLive.UWP.Views
     /// <summary>
     /// 可用于自身或导航至 Frame 内部的空白页。
     /// </summary>
-    public sealed partial class FavoritePage : Page
+    public sealed partial class FavoritePage : Page, IRefreshablePage
     {
         readonly FavoriteVM favoriteVM;
         public FavoritePage()
@@ -32,6 +32,10 @@ namespace AllLive.UWP.Views
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
             MessageCenter.UpdateFavoriteEvent += MessageCenter_UpdateFavoriteEvent; ;
             this.InitializeComponent();
+        }
+        public void Refresh()
+        {
+            favoriteVM.Refresh();
         }
 
         private void MessageCenter_UpdateFavoriteEvent(object sender, EventArgs e)
